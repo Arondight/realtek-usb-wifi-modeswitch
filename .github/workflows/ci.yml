@@ -8,21 +8,33 @@ on:
 permissions:
   contents: read
 
+env:
+  # "latest" installs the newest shfmt release; pin a module version (for
+  # example "v3.14.1") for reproducible formatting checks.
+  SHFMT_TAG: latest
+
 jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+          cache: false
       - name: Install shellcheck and shfmt
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y shellcheck
-          curl -fsSL -o /tmp/shfmt \
-            https://github.com/mvdan/sh/releases/download/v3.14.1/shfmt_v3.14.1_linux_amd64
-          sudo install -m 0755 /tmp/shfmt /usr/local/bin/shfmt
+          if [[ "$SHFMT_TAG" == "latest" ]]; then
+            go install mvdan.cc/sh/v3/cmd/shfmt@latest
+          else
+            go install "mvdan.cc/sh/v3/cmd/shfmt@${SHFMT_TAG}"
+          fi
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
           shellcheck --version
-          shfmt --version
+          "$(go env GOPATH)/bin/shfmt" --version
       - name: ShellCheck
         run: shellcheck modeswitch.sh install.sh tests/smoke.sh tests/unit.sh
       - name: shfmt
