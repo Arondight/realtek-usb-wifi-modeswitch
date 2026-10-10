@@ -1,0 +1,5 @@
+# ShellCheck configuration for the shell scripts in this repository.
+shell=bash
+
+# External files are never sourced by these scripts.
+external-sources=false

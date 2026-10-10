@@ -1,0 +1,141 @@
+.TH MODESWITCH 8 "2026" "realtek-usb-wifi-modeswitch 1.0.0" "System Administration"
+.SH NAME
+modeswitch \- switch Realtek USB Wi-Fi adapters out of CD-ROM mode
+.SH SYNOPSIS
+.B modeswitch
+[\fIcommand\fR] [\fIoptions\fR]
+.SH DESCRIPTION
+Many low-cost Realtek USB Wi-Fi adapters (RTL8192FU, RTL8821CU, RTL8811CU,
+RTL8822BU, RTL8822CU and similar chips) enumerate as a USB CD-ROM drive when
+they are first plugged in, so that Windows can auto-run the bundled driver.
+Linux sees only the fake CD-ROM and the Wi-Fi function stays hidden until the
+device is told to switch modes.
+.PP
+.B modeswitch
+detects such devices, switches them to Wi-Fi mode with
+.BR usb_modeswitch (1)
+(a SCSI eject is used as a fallback), finds a kernel module that claims the
+device's Wi-Fi USB ID, loads it, repairs bindings to the wrong driver and
+optionally installs a udev rule that performs the switch automatically on
+every plug-in.
+.SH COMMANDS
+.TP
+.B setup
+Detect, switch mode, load a driver, install the udev rule and verify.
+This is the default when no command is given.
+.TP
+.B switch
+Only switch devices from CD-ROM to Wi-Fi mode.
+.TP
+.B status
+Show detected devices, modes, drivers and configuration. Does not need root.
+.TP
+.B list
+List known install-mode product IDs.
+.TP
+.B clean
+Remove the udev rule, blacklist and
+.B usb_storage
+quirk files used by this project (aliases: uninstall, --uninstall).
+.TP
+.B blacklist \fIMODULE\fR...
+Prevent kernel module(s) from being auto-loaded.
+.TP
+.B unblacklist \fIMODULE\fR...
+Undo
+.BR blacklist .
+.TP
+.B help
+Show help.
+.TP
+.B version
+Show version information.
+.SH OPTIONS
+.TP
+.BR \-y ", " \-\-yes
+Answer yes to all questions (non-interactive).
+.TP
+.BR \-n ", " \-\-dry-run
+Show what would be done without changing anything. May be used without root.
+.TP
+.B \-\-no-persist
+Do not install the udev rule.
+.TP
+.B \-\-no-deps
+Do not try to install missing packages.
+.TP
+.BI \-\-pid " PID"
+Only handle the device with this product ID (4 hex digits; may be the CD-ROM
+or the Wi-Fi mode ID, e.g. a192 or f192).
+.TP
+.BI \-\-message " HEX"
+Use this switch message instead of the built-in one (wins over a
+.B usb-modeswitch
+config file).
+.TP
+.B \-\-no-color
+Disable colored output. The
+.B NO_COLOR
+environment variable is honoured as well.
+.TP
+.B \-\-color
+Force colored output.
+.TP
+.BR \-v ", " \-\-verbose
+Print debug information.
+.TP
+.BR \-h ", " \-\-help
+Show help.
+.TP
+.BR \-V ", " \-\-version
+Show version information.
+.SH FILES
+.TP
+.I /etc/udev/rules.d/99-realtek-usb-wifi-modeswitch.rules
+udev rule installed by
+.BR "modeswitch setup" .
+.TP
+.I /etc/modprobe.d/realtek-usb-wifi-modeswitch-blacklist.conf
+Optional blacklist managed by
+.BR "modeswitch blacklist" .
+.TP
+.I /etc/modprobe.d/realtek-usb-wifi-modeswitch-usb-storage.conf
+Optional
+.B usb_storage
+quirk that keeps the kernel from holding the fake CD-ROM (see the
+troubleshooting guide); removed by
+.BR "modeswitch clean" .
+.SH EXAMPLES
+.TP
+.B sudo modeswitch
+Run the full setup.
+.TP
+.B sudo modeswitch switch --pid a192
+Switch one specific device.
+.TP
+.B modeswitch status
+Inspect the system without root.
+.TP
+.B sudo modeswitch clean
+Remove the udev rule, blacklist and usb-storage quirk.
+.SH EXIT STATUS
+.TP
+.B 0
+Success.
+.TP
+.B 1
+Operation failed.
+.TP
+.B 2
+Invalid command line.
+.SH TESTED HARDWARE
+The tool has been tested on Kylin V10 SP1 (kernel 5.15.0-72-generic) with a
+generic OEM RTL8192FU 802.11n adapter: USB ID 0bda:a192 in CD-ROM mode,
+0bda:f192 in Wi-Fi mode, bound to the out-of-tree 8192fu driver (module
+8192fu, USB driver rtl8192fu). See the README for details.
+.SH SEE ALSO
+.BR usb_modeswitch (1),
+.BR udev (7),
+.BR nmcli (1)
+.SH LICENSE
+MIT License. See the LICENSE file in the project repository.
