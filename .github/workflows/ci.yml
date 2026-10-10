@@ -13,7 +13,7 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install shellcheck and shfmt
         run: |
           sudo apt-get update -qq
@@ -32,7 +32,7 @@ jobs:
     name: Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Smoke tests
         run: bash tests/smoke.sh
       - name: Unit tests
@@ -42,7 +42,7 @@ jobs:
     name: Install test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install, run and uninstall
         run: |
           sudo ./install.sh --prefix /usr
